@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Chime's RUN</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #cceeff; /* Celeste */
+      overflow: hidden;
+      font-family: 'Verdana';
+    }
+    canvas {
+      display: block;
+      margin: auto;
+    }
+    #message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      font-size: 18px;
+      display: none;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <audio autoplay loop>
+    <source src="https://docs.google.com/uc?export=open&id=1T-8CT3pqehjz_tE-0cz8fylkGU-qAwPu" type="audio/mpeg">
+    Tu navegador no soporta audio.
+  </audio>
+
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <div id="message">
+    <p>Felices XV primaveras, por hoy y muchos más cumpleaños, esperó seguir siendo parte de tu vida ❤️</p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const playerImage = new Image();
+    playerImage.src = "A_pixel_art_digital_illustration_of_a_young_girl_i.png"; // Asegúrate de que esta imagen esté en la misma carpeta
+
+    const player = {
+      x: 50,
+      y: 300,
+      width: 40,
+      height: 40,
+      dy: 0,
+      jumping: false
+    };
+
+    const ground = 350;
+    const gravity = 0.8;
+    const jumpPower = -12;
+
+    const hearts = [
+      {x: 300, y: 310, collected: false},
+      {x: 500, y: 310, collected: false},
+      {x: 700, y: 310, collected: false}
+    ];
+
+    let keys = {};
+
+    document.addEventListener("keydown", e => keys[e.code] = true);
+    document.addEventListener("keyup", e => keys[e.code] = false);
+
+    function drawPlayer() {
+      ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+    }
+
+    function drawHearts() {
+      hearts.forEach(heart => {
+        if (!heart.collected) {
+          ctx.fillStyle = "#ff3366";
+          ctx.beginPath();
+          ctx.arc(heart.x, heart.y, 10, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    }
+
+    function update() {
+      if (keys["Space"] && !player.jumping) {
+        player.dy = jumpPower;
+        player.jumping = true;
+      }
+
+      player.dy += gravity;
+      player.y += player.dy;
+
+      if (player.y >= ground - player.height) {
+        player.y = ground - player.height;
+        player.dy = 0;
+        player.jumping = false;
+      }
+
+      hearts.forEach(heart => {
+        if (!heart.collected &&
+          player.x < heart.x + 10 &&
+          player.x + player.width > heart.x - 10 &&
+          player.y < heart.y + 10 &&
+          player.y + player.height > heart.y - 10) {
+            heart.collected = true;
+        }
+      });
+
+      if (hearts.every(h => h.collected)) {
+        document.getElementById("message").style.display = "block";
+      }
+    }
+
+    function drawGround() {
+      ctx.fillStyle = "#99ccff";
+      ctx.fillRect(0, ground, canvas.width, 50);
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGround();
+      drawPlayer();
+      drawHearts();
+      update();
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+</html>
